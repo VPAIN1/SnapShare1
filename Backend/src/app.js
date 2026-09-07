@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://snap-share-pi.vercel.app"
+      "https://snapshare-oj60.onrender.com"
     ],
     credentials: true,
   })
