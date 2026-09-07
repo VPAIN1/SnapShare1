@@ -1,18 +1,14 @@
-import nodemailer from "nodemailer";
+import { BrevoClient } from '@getbrevo/brevo';
 import dotenv from "dotenv";
 
 dotenv.config();
 
+const brevo = new BrevoClient({
+    apiKey: process.env.BREVO_API_KEY,
+});
+
 const verifyEmail = async (email, otp) => {
     try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS,
-            },
-        });
-
         // Professional HTML Email Template matching your brand theme
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 40px 0; margin: 0;">
@@ -57,20 +53,20 @@ const verifyEmail = async (email, otp) => {
         </div>
         `;
 
-        const mailConfigurations = {
-            from: process.env.MAIL_USER,
-            to: email,
+        const result = await brevo.transactionalEmails.sendTransacEmail({
+            sender: { 
+                name: "SnapShare", 
+                email: process.env.MAIL_USER // Must be your verified sender email
+            },
+            to: [{ email: email }],
             subject: "Verify Your Email - SnapShare",
-            html: htmlTemplate, // Using the html property instead of plain text
-        };
+            htmlContent: htmlTemplate,
+        });
 
-        const info = await transporter.sendMail(mailConfigurations);
-
-        console.log("OTP Sent Successfully");
-        console.log(info);
+        console.log("Registration OTP Sent Successfully via Brevo:", result);
 
     } catch (error) {
-        console.error("Error sending OTP:", error);
+        console.error("Error sending registration OTP via Brevo:", error);
         throw error;
     }
 };
