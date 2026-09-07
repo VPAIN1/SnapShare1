@@ -9,7 +9,7 @@ const brevo = new BrevoClient({
 
 const verifyEmail = async (email, otp) => {
     try {
-        // Professional HTML Email Template matching your brand theme
+
         const htmlTemplate = `
         <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 40px 0; margin: 0;">
             <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -56,7 +56,7 @@ const verifyEmail = async (email, otp) => {
         const result = await brevo.transactionalEmails.sendTransacEmail({
             sender: { 
                 name: "SnapShare", 
-                email: process.env.MAIL_USER // Must be your verified sender email
+                email: process.env.MAIL_USER 
             },
             to: [{ email: email }],
             subject: "Verify Your Email - SnapShare",
