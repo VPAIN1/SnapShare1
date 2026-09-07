@@ -22,19 +22,19 @@ const router = createBrowserRouter([
   },
   {
     path: '/register',
-    element: <><Register /></>
+    element: <><Navbar /><Register /><Footer /></>
   },
   {
     path: '/login',
-    element: <><Login /></>
+    element: <><Navbar /><Login /><Footer /></>
   },
   {
     path: '/',
-    element: <><Login /></>
+    element: <><Navbar /><Login /><Footer /></>
   },
   {
     path: '/verify',
-    element: <><Verify /></>
+    element: <><Navbar /><Verify /><Footer /></>
   },
   {
     path: '/publicPosts',
