@@ -1,18 +1,19 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
-import cookieParser from "cookie-parser";
 
 export const isAuth = async (req, res, next) => {
-    const token = req.cookies.token || req.cookies.refreshToken;
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            message: "Require Login"
-        });
-    }
-
     try {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({
+                success: false,
+                message: "Require Login. No token provided."
+            });
+        }
+
+        const token = authHeader.split(" ")[1];
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const user = await User.findById(decoded.id);
@@ -30,7 +31,6 @@ export const isAuth = async (req, res, next) => {
         next();
 
     } catch (error) {
-
         if (error.name === "TokenExpiredError") {
             return res.status(401).json({
                 success: false,

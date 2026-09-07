@@ -19,8 +19,13 @@ const Feed = () => {
         const fetchPosts = async () => {
             try {
                 setLoading(true);
+
+                const token = localStorage.getItem("token");
+
                 const res = await axios.get("https://snapshare1.onrender.com/api/images/getallposts", {
-                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
 
                 if (res.data.success) {

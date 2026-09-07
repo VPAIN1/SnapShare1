@@ -22,7 +22,7 @@ const Navbar = () => {
     { name: "Home", path: "/home" },
     { name: "Feed", path: "/feed" },
     { name: "UploadPost", path: "/publicPosts" },
-    {name: "My Posts", path: "/myposts"},
+    { name: "My Posts", path: "/myposts" },
     { name: "About", path: "/about" }
   ];
 
@@ -30,12 +30,20 @@ const Navbar = () => {
     try {
       setLoading(true);
 
+      const token = localStorage.getItem("token");
+
       await axios.post(
-        "http://localhost:5000/api/users/logout",
+        "https://snapshare1.onrender.com/api/users/logout",
         {},
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
 
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
 
       toast.success("Logged out successfully");

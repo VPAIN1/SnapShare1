@@ -19,8 +19,13 @@ const MyPosts = () => {
     const fetchMyPosts = async () => {
       try {
         setLoading(true);
+
+        const token = localStorage.getItem("token");
+
         const res = await axios.get("https://snapshare1.onrender.com/api/images/myposts", {
-          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         if (res.data.success) {
@@ -43,8 +48,14 @@ const MyPosts = () => {
   // Delete Handler Function
   const handleDelete = async (postId) => {
     try {
+      // 1. Grab token from localStorage
+      const token = localStorage.getItem("token");
+
+      // 2. Pass it in the Authorization header
       const res = await axios.delete(`https://snapshare1.onrender.com/api/images/deletepost/${postId}`, {
-        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (res.data.success) {

@@ -146,20 +146,6 @@ export const loginUser = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '10d' });
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true,    
-            sameSite: 'none', 
-            maxAge: 10 * 24 * 60 * 60 * 1000
-        });
-
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,    
-            sameSite: 'none',  
-            maxAge: 30 * 24 * 60 * 60 * 1000
-        });
-
         user.isloggedin = true;
         await user.save();
 
@@ -169,7 +155,13 @@ export const loginUser = async (req, res) => {
         }
 
         await Session.create({ userId: user._id });
-        return res.status(200).json({ message: `Login successful ${user.firstName}`, token, refreshToken, user: user });
+
+        return res.status(200).json({ 
+            message: `Login successful ${user.firstName}`, 
+            token, 
+            refreshToken, 
+            user: user 
+        });
     }
     catch (error) {
         console.error('Error logging in user:', error);
@@ -182,9 +174,6 @@ export const logout = async (req, res) => {
         const userId = req.user._id;
 
         await Session.deleteOne({ userId });
-
-        res.clearCookie('token');
-        res.clearCookie('refreshToken');
 
         await User.findByIdAndUpdate(userId, { isloggedin: false });
 
@@ -204,7 +193,7 @@ export const logout = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        const userId = req.id;
+        const userId = req.id; 
 
         const user = await User.findById(userId).select("-password");
 

@@ -69,13 +69,15 @@ const AddPost = () => {
         data.append("files", file);
       });
 
+      const token = localStorage.getItem("token");
+
       const res = await axios.post(
         "https://snapshare1.onrender.com/api/images/addimage",
         data,
         {
-          withCredentials: true,
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -171,7 +173,6 @@ const AddPost = () => {
 
           </CardContent>
 
-          {/* Added py-4 or pb-6 to CardFooter so the button isn't touching the edge */}
           <CardFooter className="pt-2 pb-6">
             <Button
               type="submit"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { User, Mail, Phone, Globe, Edit, Shield, LogOut, Link as LinkIcon, Loader2, Share2 } from "lucide-react";
+import { User, Mail, Phone, Globe, Edit, Shield, LogOut, Loader2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -21,8 +21,15 @@ const Profile = () => {
         const fetchUserProfile = async () => {
             try {
                 setLoading(true);
+
+                // 1. Grab token from localStorage
+                const token = localStorage.getItem("token");
+
+                // 2. Pass it in the Authorization header
                 const res = await axios.get("https://snapshare1.onrender.com/api/users/getuserprofile", {
-                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
 
                 if (res.data.success) {
@@ -94,6 +101,8 @@ const Profile = () => {
                             variant="outline"
                             className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-start gap-2.5 px-3 mt-4"
                             onClick={() => {
+                                localStorage.removeItem("token");
+                                localStorage.removeItem("refreshToken");
                                 localStorage.removeItem("user");
                                 navigate("/login");
                             }}

@@ -76,13 +76,19 @@ const UpdateProfile = () => {
         try {
             setUploading(true);
             const storedUser = JSON.parse(localStorage.getItem("user"));
+            
+            // 1. Grab token from localStorage
+            const token = localStorage.getItem("token");
 
+            // 2. Make request with Authorization header
             const res = await axios.patch(
                 "https://snapshare1.onrender.com/api/users/update-profile-pic",
                 imageFormData,
                 {
-                    headers: { "Content-Type": "multipart/form-data" },
-                    withCredentials: true,
+                    headers: { 
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`
+                    },
                 }
             );
 
@@ -108,11 +114,19 @@ const UpdateProfile = () => {
         try {
             setLoading(true);
             const storedUser = JSON.parse(localStorage.getItem("user"));
+            
+            // 1. Grab token from localStorage
+            const token = localStorage.getItem("token");
 
+            // 2. Make request with Authorization header
             const res = await axios.patch(
                 "https://snapshare1.onrender.com/api/users/update-profile",
                 formData,
-                { withCredentials: true }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
 
             if (res.data.success) {
