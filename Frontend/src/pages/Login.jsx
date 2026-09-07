@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -43,13 +43,7 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "https://snapshare1.onrender.com/api/users/login",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await API.post("/api/users/login", formData);
 
       if (res.data.token) {
         localStorage.setItem("user", JSON.stringify(res.data.user));
