@@ -11,12 +11,15 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://snap-share-pi.vercel.app"
+    ],
     credentials: true,
   })
 );
 
-app.use('/api/users',router)
-app.use('/api/images',images)
+app.use('/api/users', router)
+app.use('/api/images', images)
 
 export default app;
