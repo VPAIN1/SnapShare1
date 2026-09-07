@@ -19,7 +19,7 @@ const Feed = () => {
         const fetchPosts = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get("http://localhost:5000/api/images/getallposts", {
+                const res = await axios.get("https://snapshare1.onrender.com/api/images/getallposts", {
                     withCredentials: true,
                 });
 

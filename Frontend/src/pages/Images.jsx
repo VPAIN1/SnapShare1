@@ -70,7 +70,7 @@ const AddPost = () => {
       });
 
       const res = await axios.post(
-        "http://localhost:5000/api/images/addimage",
+        "https://snapshare1.onrender.com/api/images/addimage",
         data,
         {
           withCredentials: true,

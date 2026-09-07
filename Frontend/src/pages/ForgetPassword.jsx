@@ -32,7 +32,7 @@ const ForgetPassword = () => {
             setLoading(true);
 
             const res = await axios.post(
-                "http://localhost:5000/api/users/forget-password",
+                "https://snapshare1.onrender.com/api/users/forget-password",
                 {
                     email
                 }
@@ -66,7 +66,7 @@ const ForgetPassword = () => {
             setLoading(true);
 
             const res = await axios.post(
-                `http://localhost:5000/api/users/verify-otp/${encodeURIComponent(email)}`,
+                `https://snapshare1.onrender.com/api/users/verify-otp/${encodeURIComponent(email)}`,
                 {
                     otp: otp
                 }

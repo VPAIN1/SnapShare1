@@ -18,7 +18,7 @@ const Verify = () => {
             setLoading(true);
 
             const res = await axios.post(
-                `http://localhost:5000/api/users/verify`,
+                `https://snapshare1.onrender.com/api/users/verify`,
                 { email, otp }
             );
 
@@ -36,7 +36,7 @@ const Verify = () => {
     const resendOTP = async () => {
         try {
             await axios.post(
-                "http://localhost:5000/api/users/reverify",
+                "https://snapshare1.onrender.com/api/users/reverify",
                 { email }
             );
 

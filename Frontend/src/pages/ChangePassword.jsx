@@ -40,7 +40,7 @@ const ChangePassword = () => {
             setLoading(true);
 
             const res = await axios.post(
-                `http://localhost:5000/api/users/change-password/${email}`,
+                `https://snapshare1.onrender.com/api/users/change-password/${email}`,
                 {
                     newPassword,
                     confirmPassword,

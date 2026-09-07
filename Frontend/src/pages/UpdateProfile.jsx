@@ -78,7 +78,7 @@ const UpdateProfile = () => {
             const storedUser = JSON.parse(localStorage.getItem("user"));
 
             const res = await axios.patch(
-                "http://localhost:5000/api/users/update-profile-pic",
+                "https://snapshare1.onrender.com/api/users/update-profile-pic",
                 imageFormData,
                 {
                     headers: { "Content-Type": "multipart/form-data" },
@@ -110,7 +110,7 @@ const UpdateProfile = () => {
             const storedUser = JSON.parse(localStorage.getItem("user"));
 
             const res = await axios.patch(
-                "http://localhost:5000/api/users/update-profile",
+                "https://snapshare1.onrender.com/api/users/update-profile",
                 formData,
                 { withCredentials: true }
             );

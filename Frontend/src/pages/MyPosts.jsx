@@ -19,7 +19,7 @@ const MyPosts = () => {
     const fetchMyPosts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/images/myposts", {
+        const res = await axios.get("https://snapshare1.onrender.com/api/images/myposts", {
           withCredentials: true,
         });
 
@@ -43,7 +43,7 @@ const MyPosts = () => {
   // Delete Handler Function
   const handleDelete = async (postId) => {
     try {
-      const res = await axios.delete(`http://localhost:5000/api/images/deletepost/${postId}`, {
+      const res = await axios.delete(`https://snapshare1.onrender.com/api/images/deletepost/${postId}`, {
         withCredentials: true,
       });
 

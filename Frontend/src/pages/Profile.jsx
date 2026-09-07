@@ -21,7 +21,7 @@ const Profile = () => {
         const fetchUserProfile = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get("http://localhost:5000/api/users/getuserprofile", {
+                const res = await axios.get("https://snapshare1.onrender.com/api/users/getuserprofile", {
                     withCredentials: true,
                 });
 
