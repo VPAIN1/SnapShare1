@@ -22,7 +22,7 @@ const Hero = () => {
                                 onClick={() => navigate("/publicPosts")}
                                 className='bg-white text-purple-600 hover:bg-gray-100 w-full sm:w-auto font-semibold cursor-pointer'
                             >
-                                Upload Image
+                                Upload Post
                             </Button>
                             <Button 
                                 variant='outline' 
