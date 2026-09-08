@@ -276,7 +276,6 @@ export const forgetPassword = async (req, res) => {
 
         user.otp = otp;
         user.otpExpiry = otpExpiry;
-        user.isverified = true;
 
         await user.save();
 
@@ -367,6 +366,7 @@ export const verifyOTP = async (req, res) => {
 
         user.otp = null;
         user.otpExpiry = null;
+        user.isverified = true;
 
         await user.save();
 
