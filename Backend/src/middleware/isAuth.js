@@ -41,7 +41,7 @@ export const isAuth = async (req, res, next) => {
         if (error.name === "JsonWebTokenError") {
             return res.status(401).json({
                 success: false,
-                message: "Invalid authentication token"
+                message: "Require Login. No token provided."
             });
         }
 
