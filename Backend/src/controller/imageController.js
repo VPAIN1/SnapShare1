@@ -60,6 +60,10 @@ export const getAllImages = async (req, res) => {
     try {
         const images = await Images.find()
             .populate("userId", "email profilepic firstName lastName")
+            .populate({
+                path: "comments.userId",
+                select: "email profilepic firstName lastName"
+            })
             .sort({ createdAt: -1 });
 
         if (!images || images.length === 0) {
