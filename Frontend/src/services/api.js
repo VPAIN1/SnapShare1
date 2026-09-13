@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "https://snapshare1.onrender.com/api";
+const API_BASE = "http://localhost:5000/api";
 
 const getAuthConfig = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
