@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getProfileViewerAPI } from "@/services/api";
 import { User, Mail, Phone, Globe, Shield, Loader2, Share2, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Image as ImageIcon } from "lucide-react";
@@ -26,11 +26,7 @@ const ProfileViewer = () => {
                 setLoading(true);
                 const token = localStorage.getItem("token");
 
-                const res = await axios.get(`http://localhost:5000/api/users/profileviewer/${email}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const res = await getProfileViewerAPI(email);
 
                 if (res.data.success) {
                     setUser(res.data.user);

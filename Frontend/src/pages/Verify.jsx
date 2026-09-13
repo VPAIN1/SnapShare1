@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import { verifyOtpAPI } from "@/services/api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
@@ -17,10 +17,7 @@ const Verify = () => {
         try {
             setLoading(true);
 
-            const res = await axios.post(
-                `http://localhost:5000/api/users/verify`,
-                { email, otp }
-            );
+            const res = await verifyOtpAPI(email, otp);
 
             if (res.data.success) {
                 alert(res.data.message);

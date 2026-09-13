@@ -428,13 +428,13 @@ export const updateProfilePic = async (req, res) => {
         }
 
         const user = await User.findById(userId);
+        
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found."
             });
         }
-
 
         const result = await uploadFile(file.buffer, file.originalname, user.profilepicpublicid);
 

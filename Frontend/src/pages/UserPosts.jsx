@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getPostsViewerAPI } from "@/services/api";
 import { Loader2, Image as ImageIcon, X, Download, ArrowLeft } from "lucide-react";
 import {
     Card,
@@ -23,12 +23,7 @@ const UserPosts = () => {
                 setLoading(true);
                 const token = localStorage.getItem("token");
 
-                // Calls your postsviewer backend controller endpoint
-                const res = await axios.get(`http://localhost:5000/api/users/postsviewer/${email}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const res = await getPostsViewerAPI(email);
 
                 if (res.data.success) {
                     const sortedPosts = res.data.images.sort(

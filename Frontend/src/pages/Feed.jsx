@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Loader2, Image as ImageIcon, X, Download, User } from "lucide-react";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from "@/components/ui/card";
+import { Loader2, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { fetchAllPostsAPI, likePostAPI, addCommentAPI, deleteCommentAPI, sharePostAPI } from "@/services/api";
+import { useFeedSocket } from "@/hooks/useFeedSocket";
+import { MediaModal } from "@/components/modals/MediaModal";
+import { PostActions } from "@/components/modals/PostActions"; 
 
 const Feed = () => {
     const [posts, setPosts] = useState([]);
@@ -15,40 +14,60 @@ const Feed = () => {
     const [selectedMedia, setSelectedMedia] = useState(null);
     const navigate = useNavigate();
 
+    const rawUser = localStorage.getItem("user") || localStorage.getItem("userInfo") || localStorage.getItem("currentUser");
+    let currentUserId = localStorage.getItem("userId") || localStorage.getItem("Id") || localStorage.getItem("_id");
+    if (!currentUserId && rawUser) {
+        try { currentUserId = JSON.parse(rawUser)._id || JSON.parse(rawUser).id; }
+        catch (e) { currentUserId = rawUser; }
+    }
+
+    useFeedSocket(setPosts, setSelectedMedia);
+
     useEffect(() => {
-        const fetchPosts = async () => {
+        const loadPosts = async () => {
             try {
                 setLoading(true);
-
-                const token = localStorage.getItem("token");
-
-                const res = await axios.get("http://localhost:5000/api/images/getallposts", {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
+                const res = await fetchAllPostsAPI();
                 if (res.data.success) {
-                    const sortedPosts = res.data.images.sort(
-                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-                    );
-                    setPosts(sortedPosts);
+                    setPosts(res.data.images.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
                 }
             } catch (err) {
-                console.error("Error fetching posts:", err);
                 toast.error(err.response?.data?.message || "Failed to load posts.");
-                if (err.response?.status === 401) {
-                    navigate("/login");
-                }
+                if (err.response?.status === 401) navigate("/login");
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchPosts();
+        loadPosts();
     }, [navigate]);
 
-    // Handle file download helper
+    const handleLike = async (postId) => {
+        try { await likePostAPI(postId); }
+        catch { toast.error("Failed to update like"); }
+    };
+
+    const handleAddComment = async (postId, text) => {
+        try { await addCommentAPI(postId, text); }
+        catch { toast.error("Failed to add comment"); }
+    };
+
+    const handleDeleteComment = async (postId, commentId) => {
+        try {
+            await deleteCommentAPI(postId, commentId);
+            toast.success("Comment deleted");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to delete comment");
+        }
+    };
+
+    const handleShare = async (postId, mediaUrl) => {
+        try {
+            await sharePostAPI(postId);
+            navigator.clipboard.writeText(mediaUrl);
+            toast.success("Post link copied & shared!");
+        } catch { toast.error("Failed to share post"); }
+    };
+
     const handleDownload = async (url, title) => {
         try {
             const response = await fetch(url);
@@ -56,199 +75,121 @@ const Feed = () => {
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = blobUrl;
-            
-            // Extract file extension or default to jpg/mp4
-            const extension = url.split(".").pop().split("?")[0] || "jpg";
-            link.download = `${title || "media"}-${Date.now()}.${extension}`;
-            
+            link.download = `${title || "media"}-${Date.now()}.${url.split(".").pop().split("?")[0] || "jpg"}`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(blobUrl);
-            toast.success("Download started successfully!");
-        } catch (error) {
-            console.error("Download failed:", error);
-            // Fallback to direct opening if blob fails due to CORS
-            window.open(url, "_blank");
-        }
+            toast.success("Download started!");
+        } catch { window.open(url, "_blank"); }
     };
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-[80vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            <div className="flex justify-center items-center min-h-[90vh] bg-gradient-to-br from-purple-950 via-gray-900 to-indigo-950 w-full overflow-x-hidden">
+                <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4 relative">
-            <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-                <ImageIcon className="text-purple-500" /> SnapShare Feed
-            </h1>
+        <div className="relative min-h-[92vh] w-full overflow-x-hidden bg-gradient-to-br from-purple-950 via-gray-900 to-indigo-950 pt-24 pb-16 px-4">
+            
+            {/* Background Glowing Ambient Orbs */}
+            <div className="absolute top-1/4 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-            {posts.length === 0 ? (
-                <div className="text-center py-20 text-gray-400 bg-gray-900/50 rounded-xl border border-gray-800 max-w-xl mx-auto">
-                    <p>No posts available.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.flatMap((post) => {
-                        const username = post.userEmail ? post.userEmail.split("@")[0] : "user";
-                        const firstLetter = username.charAt(0).toUpperCase();
-
-                        const formattedDate = new Date(post.createdAt).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                        });
-
-                        return post.Img.map((media, mediaIndex) => {
-                            const isVideo = media.url.match(/\.(mp4|mov|webm|avi)$/i) || media.url.includes("video");
-
-                            return (
-                                <Card
-                                    key={`${post._id}-${mediaIndex}`}
-                                    className="bg-gray-900 text-white border-gray-800 shadow-xl overflow-hidden rounded-xl flex flex-col justify-between"
-                                >
-                                    <div>
-                                        {/* TOP: User Profile */}
-                                        <CardHeader className="flex flex-row items-center gap-3 py-3 px-4 border-b border-gray-800/60">
-                                            <div 
-                                                onClick={() => navigate(`/profileviewer/${post.userEmail}`)}
-                                                className="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-inner cursor-pointer hover:opacity-90 transition overflow-hidden border border-purple-500"
-                                            >
-                                                {post.userProfilePic ? (
-                                                    <img 
-                                                        src={post.userProfilePic} 
-                                                        alt="Avatar" 
-                                                        className="w-full h-full object-cover" 
-                                                    />
-                                                ) : (
-                                                    firstLetter
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col truncate">
-                                                <span 
-                                                    onClick={() => navigate(`/profileviewer/${post.userEmail}`)}
-                                                    className="text-sm font-semibold text-gray-200 truncate cursor-pointer hover:text-purple-400 transition text-left"
-                                                >
-                                                    {post.userEmail}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {formattedDate}
-                                                </span>
-                                            </div>
-                                        </CardHeader>
-
-                                        {/* CENTER: Clickable Media Container */}
-                                        <div
-                                            onClick={() => setSelectedMedia({ ...media, isVideo, title: post.ImageName, desc: post.ImageDesc, userEmail: post.userEmail, date: formattedDate, userProfilePic: post.userProfilePic })}
-                                            className="bg-black w-full flex items-center justify-center h-[320px] overflow-hidden cursor-pointer group relative"
-                                        >
-                                            {isVideo ? (
-                                                <video
-                                                    src={media.url}
-                                                    autoPlay
-                                                    muted
-                                                    playsInline
-                                                    controls
-                                                    className="w-full h-full object-contain pointer-events-auto"
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={media.url}
-                                                    alt={post.ImageName}
-                                                    className="w-full h-full object-contain transition group-hover:scale-105"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* BOTTOM: Title & Caption */}
-                                    <CardContent className="py-3 px-4 space-y-2">
-                                        <h2 className="font-bold text-base text-gray-100 truncate">{post.ImageName}</h2>
-                                        <p className="text-sm text-gray-300 line-clamp-2">
-                                            {post.ImageDesc}
-                                        </p>
-                                    </CardContent>
-
-                                </Card>
-                            );
-                        });
-                    })}
-                </div>
-            )}
-
-            {/* MODAL POPUP OVERLAY */}
-            {selectedMedia && (
-                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden max-w-3xl w-full relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-
-                        {/* Top Action Buttons (Download & Close) */}
-                        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-                            <button
-                                onClick={() => handleDownload(selectedMedia.url, selectedMedia.title)}
-                                title="Download Media"
-                                className="bg-black/60 hover:bg-black text-white p-2 rounded-full transition flex items-center gap-1 text-xs px-3"
-                            >
-                                <Download className="w-4 h-4" /> Download
-                            </button>
-                            <button
-                                onClick={() => setSelectedMedia(null)}
-                                title="Close"
-                                className="bg-black/60 hover:bg-black text-white p-2 rounded-full transition"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Media Content */}
-                        <div className="bg-black max-h-[65vh] flex items-center justify-center overflow-hidden">
-                            {selectedMedia.isVideo ? (
-                                <video
-                                    src={selectedMedia.url}
-                                    controls
-                                    autoPlay
-                                    playsInline
-                                    className="w-full max-h-[65vh] object-contain"
-                                />
-                            ) : (
-                                <img
-                                    src={selectedMedia.url}
-                                    alt={selectedMedia.title}
-                                    className="w-full max-h-[65vh] object-contain"
-                                />
-                            )}
-                        </div>
-
-                        {/* Modal Footer Info */}
-                        <div className="p-4 space-y-2 bg-gray-900">
-                            <div className="flex items-center justify-between text-xs text-purple-400 font-medium">
-                                <div 
-                                    onClick={() => {
-                                        setSelectedMedia(null);
-                                        navigate(`/profileviewer/${selectedMedia.userEmail}`);
-                                    }}
-                                    className="flex items-center gap-2 cursor-pointer group"
-                                >
-                                    <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-purple-500">
-                                        {selectedMedia.userProfilePic ? (
-                                            <img src={selectedMedia.userProfilePic} alt="Avatar" className="w-full h-full object-cover" />
-                                        ) : (
-                                            selectedMedia.userEmail.charAt(0).toUpperCase()
-                                        )}
-                                    </div>
-                                    <span className="group-hover:underline">{selectedMedia.userEmail}</span>
-                                </div>
-                                <span className="text-gray-500">{selectedMedia.date}</span>
-                            </div>
-                            <h2 className="text-lg font-bold text-white">{selectedMedia.title}</h2>
-                            <p className="text-sm text-gray-300">{selectedMedia.desc}</p>
-                        </div>
+            <div className="max-w-7xl mx-auto w-full relative z-10 space-y-8">
+                
+                {/* Header Banner */}
+                <div className="border-b border-white/10 pb-6">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                            <span className="p-2.5 bg-white/10 rounded-2xl border border-white/15 text-purple-300">
+                                <Sparkles className="w-6 h-6" />
+                            </span>
+                            SnapShare Community Feed
+                        </h1>
+                        <p className="text-purple-200/70 text-sm mt-1">
+                            Explore live moments, interact with peer posts, and discover media globally in real-time.
+                        </p>
                     </div>
                 </div>
-            )}
+
+                {posts.length === 0 ? (
+                    <div className="text-center py-24 text-gray-400 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 max-w-lg mx-auto shadow-2xl p-6">
+                        <ImageIcon className="w-12 h-12 mx-auto text-purple-400/50 mb-3" />
+                        <p className="text-lg font-medium text-gray-200">No posts available.</p>
+                        <p className="text-xs text-gray-400 mt-1">Be the first to share something amazing with the world!</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                        {posts.flatMap((post) => {
+                            const formattedDate = new Date(post.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+                            
+                            // Safely extract populated user info
+                            const userEmail = post.userId?.email || "user@example.com";
+                            const userProfilePic = post.userId?.profilepic;
+                            const firstLetter = userEmail.charAt(0).toUpperCase();
+
+                            return post.Img.map((media, mediaIndex) => {
+                                const isVideo = media.url.match(/\.(mp4|mov|webm|avi)$/i) || media.url.includes("video");
+                                const openModalHandler = () => setSelectedMedia({ ...media, postId: post._id, userId: post.userId, isVideo, title: post.ImageName, desc: post.ImageDesc, userEmail, date: formattedDate, userProfilePic, comments: post.comments || [] });
+
+                                return (
+                                    <Card key={`${post._id}-${mediaIndex}`} className="bg-white/95 backdrop-blur-xl text-gray-900 border border-white/20 shadow-2xl overflow-hidden rounded-3xl flex flex-col justify-between w-full hover:border-purple-300 transition duration-300">
+                                        <div>
+                                            {/* User Header */}
+                                            <CardHeader className="flex flex-row items-center gap-3 py-3.5 px-4 border-b border-gray-100">
+                                                <div onClick={() => navigate(`/profileviewer/${userEmail}`)} className="w-11 h-11 rounded-full bg-purple-100 text-[#59168B] flex items-center justify-center font-bold cursor-pointer overflow-hidden border border-purple-200 shrink-0 shadow-sm">
+                                                    {userProfilePic ? <img src={userProfilePic} className="w-full h-full object-cover" /> : firstLetter}
+                                                </div>
+                                                <div className="flex flex-col truncate cursor-pointer" onClick={() => navigate(`/profileviewer/${userEmail}`)}>
+                                                    <span className="text-sm font-semibold text-gray-900 truncate hover:text-[#59168B] transition">{userEmail}</span>
+                                                    <span className="text-xs text-gray-400">{formattedDate}</span>
+                                                </div>
+                                            </CardHeader>
+
+                                            {/* Media Box */}
+                                            <div onClick={openModalHandler} className="bg-black w-full flex items-center justify-center h-[320px] overflow-hidden cursor-pointer group relative">
+                                                {isVideo ? <video src={media.url} autoPlay muted playsInline controls className="w-full h-full object-contain pointer-events-auto" /> : <img src={media.url} alt={post.ImageName} className="w-full h-full object-contain transition duration-300 group-hover:scale-105" />}
+                                            </div>
+                                        </div>
+
+                                        {/* Content & Actions */}
+                                        <CardContent className="py-4 px-4 space-y-3">
+                                            <div>
+                                                <h2 className="font-bold text-base text-gray-900 truncate">{post.ImageName}</h2>
+                                                <p className="text-sm text-gray-600 line-clamp-2 mt-0.5">{post.ImageDesc}</p>
+                                            </div>
+
+                                            {/* Reusable PostActions Component */}
+                                            <div className="pt-2 border-t border-gray-100">
+                                                <PostActions 
+                                                    post={post} 
+                                                    currentUserId={currentUserId} 
+                                                    onLike={handleLike} 
+                                                    onOpenModal={openModalHandler} 
+                                                    onShare={() => handleShare(post._id, media.url)} 
+                                                />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            });
+                        })}
+                    </div>
+                )}
+
+                <MediaModal
+                    selectedMedia={selectedMedia}
+                    currentUserId={currentUserId}
+                    onClose={() => setSelectedMedia(null)}
+                    onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
+                    onDownload={handleDownload}
+                />
+            </div>
         </div>
     );
 };
