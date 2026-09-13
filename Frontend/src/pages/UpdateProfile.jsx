@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft, Camera, User, Phone, Globe, Share2 } from "lucide-react";
+import { Loader2, ArrowLeft, Camera, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,8 +45,9 @@ const UpdateProfile = () => {
                 otherPlatform: storedUser.otherPlatform || "",
             });
             
-            if (storedUser.profilepic || storedUser.profileImage) {
-                setProfileImage(storedUser.profilepic || storedUser.profileImage);
+            // Match schema key: profilepic
+            if (storedUser.profilepic) {
+                setProfileImage(storedUser.profilepic);
             }
         } else {
             navigate("/login");
@@ -64,6 +65,7 @@ const UpdateProfile = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Preview locally before upload finishes
         const reader = new FileReader();
         reader.onloadend = () => {
             setProfileImage(reader.result);
@@ -76,13 +78,10 @@ const UpdateProfile = () => {
         try {
             setUploading(true);
             const storedUser = JSON.parse(localStorage.getItem("user"));
-            
-            // 1. Grab token from localStorage
             const token = localStorage.getItem("token");
 
-            // 2. Make request with Authorization header
             const res = await axios.patch(
-                "https://snapshare1.onrender.com/api/users/update-profile-pic",
+                "http://localhost:5000/api/users/update-profile-pic",
                 imageFormData,
                 {
                     headers: { 
@@ -94,9 +93,12 @@ const UpdateProfile = () => {
 
             if (res.data.success) {
                 toast.success("Profile picture updated successfully!");
+                const newPicUrl = res.data.user?.profilepic || res.data.profilepic;
+                setProfileImage(newPicUrl);
+                
                 const updatedUser = { 
                     ...storedUser, 
-                    profilepic: res.data.user?.profilepic || res.data.profilepic 
+                    profilepic: newPicUrl 
                 };
                 localStorage.setItem("user", JSON.stringify(updatedUser));
             }
@@ -114,13 +116,10 @@ const UpdateProfile = () => {
         try {
             setLoading(true);
             const storedUser = JSON.parse(localStorage.getItem("user"));
-            
-            // 1. Grab token from localStorage
             const token = localStorage.getItem("token");
 
-            // 2. Make request with Authorization header
             const res = await axios.patch(
-                "https://snapshare1.onrender.com/api/users/update-profile",
+                "http://localhost:5000/api/users/update-profile",
                 formData,
                 {
                     headers: {
@@ -318,7 +317,7 @@ const UpdateProfile = () => {
                     <Button
                         type="submit"
                         form="update-form"
-                        disabled={loading}
+                        disabled={loading || uploading}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2"
                     >
                         {loading ? (

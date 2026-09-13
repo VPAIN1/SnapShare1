@@ -33,7 +33,7 @@ const Navbar = () => {
       const token = localStorage.getItem("token");
 
       await axios.post(
-        "https://snapshare1.onrender.com/api/users/logout",
+        "http://localhost:5000/api/users/logout",
         {},
         {
           headers: {

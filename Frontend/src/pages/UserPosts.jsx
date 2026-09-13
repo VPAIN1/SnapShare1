@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Loader2, Image as ImageIcon, X, Download, User } from "lucide-react";
+import { Loader2, Image as ImageIcon, X, Download, ArrowLeft } from "lucide-react";
 import {
     Card,
     CardContent,
     CardHeader,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
-const Feed = () => {
+const UserPosts = () => {
+    const { email } = useParams(); // Grabs email from URL route /user-posts/:email
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedMedia, setSelectedMedia] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchPosts = async () => {
+        const fetchUserPosts = async () => {
             try {
                 setLoading(true);
-
                 const token = localStorage.getItem("token");
 
-                const res = await axios.get("http://localhost:5000/api/images/getallposts", {
+                // Calls your postsviewer backend controller endpoint
+                const res = await axios.get(`http://localhost:5000/api/users/postsviewer/${email}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -35,8 +37,12 @@ const Feed = () => {
                     setPosts(sortedPosts);
                 }
             } catch (err) {
-                console.error("Error fetching posts:", err);
-                toast.error(err.response?.data?.message || "Failed to load posts.");
+                console.error("Error fetching user posts:", err);
+                if (err.response?.status === 404) {
+                    setPosts([]); // Handle empty posts gracefully
+                } else {
+                    toast.error(err.response?.data?.message || "Failed to load posts.");
+                }
                 if (err.response?.status === 401) {
                     navigate("/login");
                 }
@@ -45,8 +51,10 @@ const Feed = () => {
             }
         };
 
-        fetchPosts();
-    }, [navigate]);
+        if (email) {
+            fetchUserPosts();
+        }
+    }, [email, navigate]);
 
     // Handle file download helper
     const handleDownload = async (url, title) => {
@@ -57,7 +65,6 @@ const Feed = () => {
             const link = document.createElement("a");
             link.href = blobUrl;
             
-            // Extract file extension or default to jpg/mp4
             const extension = url.split(".").pop().split("?")[0] || "jpg";
             link.download = `${title || "media"}-${Date.now()}.${extension}`;
             
@@ -68,7 +75,6 @@ const Feed = () => {
             toast.success("Download started successfully!");
         } catch (error) {
             console.error("Download failed:", error);
-            // Fallback to direct opening if blob fails due to CORS
             window.open(url, "_blank");
         }
     };
@@ -82,14 +88,24 @@ const Feed = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4 relative">
-            <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-                <ImageIcon className="text-purple-500" /> SnapShare Feed
-            </h1>
+        <div className="max-w-7xl mx-auto py-8 px-4 relative mt-16">
+            {/* Top Navigation Bar */}
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold flex items-center gap-2 text-white">
+                    <ImageIcon className="text-purple-500" /> Posts by {email}
+                </h1>
+                <Button
+                    variant="outline"
+                    onClick={() => navigate(-1)}
+                    className="border-gray-700 bg-gray-900 text-gray-200 hover:bg-gray-800 flex items-center gap-2"
+                >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                </Button>
+            </div>
 
             {posts.length === 0 ? (
                 <div className="text-center py-20 text-gray-400 bg-gray-900/50 rounded-xl border border-gray-800 max-w-xl mx-auto">
-                    <p>No posts available.</p>
+                    <p>This user hasn't uploaded any posts yet.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -253,4 +269,4 @@ const Feed = () => {
     );
 };
 
-export default Feed;
+export default UserPosts;

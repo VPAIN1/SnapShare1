@@ -72,7 +72,7 @@ const AddPost = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "https://snapshare1.onrender.com/api/images/addimage",
+        "http://localhost:5000/api/images/addimage",
         data,
         {
           headers: {

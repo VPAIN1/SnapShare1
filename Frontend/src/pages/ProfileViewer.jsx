@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { User, Mail, Phone, Globe, Edit, Shield, LogOut, Loader2, Share2, X } from "lucide-react";
+import { User, Mail, Phone, Globe, Shield, Loader2, Share2, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Image as ImageIcon } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -12,22 +13,20 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const Profile = () => {
+const ProfileViewer = () => {
+    const { email } = useParams(); // Grabs email from the URL route /profileviewer/:email
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false); // State for image popup modal
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
+        const fetchUserProfileViewer = async () => {
             try {
                 setLoading(true);
-
-                // 1. Grab token from localStorage
                 const token = localStorage.getItem("token");
 
-                // 2. Pass it in the Authorization header
-                const res = await axios.get("http://localhost:5000/api/users/getuserprofile", {
+                const res = await axios.get(`http://localhost:5000/api/users/profileviewer/${email}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -37,8 +36,8 @@ const Profile = () => {
                     setUser(res.data.user);
                 }
             } catch (err) {
-                console.error("Error fetching profile:", err);
-                toast.error(err.response?.data?.message || "Failed to load profile.");
+                console.error("Error fetching profile viewer data:", err);
+                toast.error(err.response?.data?.message || "Failed to load user profile.");
                 if (err.response?.status === 401) {
                     navigate("/login");
                 }
@@ -47,8 +46,10 @@ const Profile = () => {
             }
         };
 
-        fetchUserProfile();
-    }, [navigate]);
+        if (email) {
+            fetchUserProfileViewer();
+        }
+    }, [email, navigate]);
 
     if (loading) {
         return (
@@ -58,58 +59,47 @@ const Profile = () => {
         );
     }
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <p className="text-gray-500 mb-4">User profile not found.</p>
+                <Button onClick={() => navigate(-1)} variant="outline">Go Back</Button>
+            </div>
+        );
+    }
 
     return (
         <div className="flex justify-center items-start min-h-[calc(100vh-4rem)] bg-gray-50 mt-16 py-12 px-4">
-
             <div className="w-full max-w-4xl flex flex-col md:flex-row gap-6 items-start">
 
-                {/* LEFT SIDE: Menu Navigation Card */}
+                {/* LEFT SIDE: Navigation / Back Button Card */}
                 <Card className="w-full md:w-64 shadow-lg border-gray-100 shrink-0">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-lg font-bold text-gray-900">
-                            Dashboard
+                            Profile Viewer
                         </CardTitle>
                         <CardDescription className="text-xs">
-                            Manage your account
+                            Viewing user details
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2">
-                        {/* Update Profile Button */}
+                        {/* View User Posts Button */}
                         <Button
-                            onClick={() => navigate("/update-profile")}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-start gap-2.5 px-3"
+                            onClick={() => navigate(`/user-posts/${user.email}`)}
+                            className="w-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-start gap-2.5 px-3"
                         >
-                            <Edit className="w-4 h-4" />
-                            Update Profile
+                            <ImageIcon className="w-4 h-4" />
+                            View All Posts
                         </Button>
 
-                        {/* CONDITIONAL ADMIN PANEL BUTTON */}
-                        {user.role === "admin" && (
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate("/admin-panel")}
-                                className="w-full border-purple-200 text-purple-700 hover:bg-purple-50 flex items-center justify-start gap-2.5 px-3"
-                            >
-                                <Shield className="w-4 h-4 text-purple-600" />
-                                Admin Panel
-                            </Button>
-                        )}
-
-                        {/* Sign Out Button */}
+                        {/* Back to Feed Button */}
                         <Button
                             variant="outline"
-                            className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-start gap-2.5 px-3 mt-4"
-                            onClick={() => {
-                                localStorage.removeItem("token");
-                                localStorage.removeItem("refreshToken");
-                                localStorage.removeItem("user");
-                                navigate("/login");
-                            }}
+                            onClick={() => navigate(-1)}
+                            className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-start gap-2.5 px-3"
                         >
-                            <LogOut className="w-4 h-4" />
-                            Sign Out
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Feed
                         </Button>
                     </CardContent>
                 </Card>
@@ -118,16 +108,16 @@ const Profile = () => {
                 <Card className="w-full flex-1 shadow-lg border-gray-100">
                     <CardHeader className="text-center pb-2">
                         {/* Clickable Profile Picture Container */}
-                        <div 
+                        <div
                             onClick={() => user.profilepic && setShowModal(true)}
                             className={`mx-auto bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mb-3 shadow-inner overflow-hidden border-2 border-blue-500 ${user.profilepic ? 'cursor-pointer hover:opacity-90 transition' : ''}`}
                             title={user.profilepic ? "Click to view photo" : ""}
                         >
                             {user.profilepic ? (
-                                <img 
-                                    src={user.profilepic} 
-                                    alt="Profile" 
-                                    className="w-full h-full object-cover" 
+                                <img
+                                    src={user.profilepic}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
                                 />
                             ) : (
                                 <User className="w-10 h-10 text-blue-600" />
@@ -135,15 +125,15 @@ const Profile = () => {
                         </div>
 
                         <CardTitle className="text-2xl font-bold text-gray-900">
-                            My Profile
+                            {user.firstName ? `${user.firstName} ${user.lastName || ""}` : "User Profile"}
                         </CardTitle>
                         <CardDescription>
-                            View and manage your account details and social links
+                            Viewing account details and social links
                         </CardDescription>
                     </CardHeader>
 
                     <CardContent className="mt-2 space-y-3">
-                        {/* Line 1: First Name & Last Name (Side by Side) */}
+                        {/* Line 1: First Name & Last Name */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex items-center p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                                 <div className="bg-blue-50 p-2 rounded-lg mr-2.5">
@@ -170,7 +160,7 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Line 2: Email ID (Full Width) */}
+                        {/* Line 2: Email ID */}
                         <div className="flex items-center p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                             <div className="bg-blue-50 p-2 rounded-lg mr-2.5">
                                 <Mail className="w-4 h-4 text-blue-500" />
@@ -183,7 +173,7 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Line 3: Mobile Number (Full Width) */}
+                        {/* Line 3: Mobile Number */}
                         <div className="flex items-center p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                             <div className="bg-blue-50 p-2 rounded-lg mr-2.5">
                                 <Phone className="w-4 h-4 text-blue-500" />
@@ -196,7 +186,7 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Line 4: Instagram & Facebook Links (Side by Side) */}
+                        {/* Line 4: Instagram & Facebook Links */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex items-center p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                                 <div className="bg-pink-50 p-2 rounded-lg mr-2.5">
@@ -231,7 +221,7 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Line 5: Other Platform Link (Full Width) */}
+                        {/* Line 5: Other Platform Link */}
                         <div className="flex items-center p-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
                             <div className="bg-purple-50 p-2 rounded-lg mr-2.5">
                                 <Share2 className="w-4 h-4 text-purple-600" />
@@ -255,16 +245,16 @@ const Profile = () => {
 
             {/* INSTAGRAM-STYLE IMAGE POPUP MODAL */}
             {showModal && (
-                <div 
+                <div
                     className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
                     onClick={() => setShowModal(false)}
                 >
-                    <div 
+                    <div
                         className="relative max-w-lg w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 flex flex-col items-center"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close Button */}
-                        <button 
+                        <button
                             onClick={() => setShowModal(false)}
                             className="absolute top-3 right-3 bg-gray-900/80 hover:bg-gray-700 text-white p-2 rounded-full transition z-10"
                         >
@@ -278,9 +268,9 @@ const Profile = () => {
 
                         {/* Big Image Viewer */}
                         <div className="w-full max-h-[75vh] flex items-center justify-center bg-black p-2">
-                            <img 
-                                src={user.profilepic} 
-                                alt="Full Profile" 
+                            <img
+                                src={user.profilepic}
+                                alt="Full Profile"
                                 className="max-w-full max-h-[70vh] object-contain rounded-lg"
                             />
                         </div>
@@ -291,4 +281,4 @@ const Profile = () => {
     );
 };
 
-export default Profile;
+export default ProfileViewer;

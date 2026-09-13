@@ -1,4 +1,5 @@
 import User from '../models/userModel.js';
+import { Images } from "../models/imageModel.js";
 import Session from '../models/sessionModel.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -6,6 +7,7 @@ import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 import { verifyEmail } from '../utils/verifyEmail.js';
 import { forgetpasswordotp } from "../utils/forgetpasswordotp.js";
+import { uploadFile, deleteFile } from "../services/imageKit.js";
 
 dotenv.config();
 
@@ -381,6 +383,103 @@ export const verifyOTP = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error"
+        });
+    }
+};
+
+
+export const profileviewer = async (req,res) => {
+    try{
+        const { email } = req.params;
+        const user = await User.findOne({email}).select("-password");
+        
+        if(!user) {
+            return res.status(404).json({
+                success : false,
+                message : "User not found"
+            })
+        }
+
+        return res.status(200).json({
+            success : true,
+            message : "User profile fetched successfully",
+            user : user
+        })
+    }
+    catch(error) {
+        console.error("Error fetching user profile:", error);
+        return res.status(500).json({
+            success : false,
+            message : "Internal server error"
+        })
+    }
+}
+
+export const updateProfilePic = async (req, res) => {
+    try {
+        const userId = req.id;
+        const file = req.file; 
+
+        if (!file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a profile picture file."
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found."
+            });
+        }
+
+
+        const result = await uploadFile(file.buffer, file.originalname, user.profilepicpublicid);
+
+        user.profilepic = result.url;
+        user.profilepicpublicid = result.fileId;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile picture updated successfully!",
+            user
+        });
+
+    } catch (error) {
+        console.error("Error updating profile picture:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error"
+        });
+    }
+};
+
+export const postsviewer = async (req, res) => {
+    try {
+        const userEmail = req.params.email; 
+        const images = await Images.find({userEmail});
+
+        if (!images || images.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No Upload posts ",
+                images: []
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            images : images
+        });
+
+    } catch (error) {
+        console.error("Error fetching user's images:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 };

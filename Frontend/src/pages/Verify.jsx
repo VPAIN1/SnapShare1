@@ -18,7 +18,7 @@ const Verify = () => {
             setLoading(true);
 
             const res = await axios.post(
-                `https://snapshare1.onrender.com/api/users/verify`,
+                `http://localhost:5000/api/users/verify`,
                 { email, otp }
             );
 

@@ -14,6 +14,8 @@ import Profile from './pages/Profile';
 import UpdateProfile from './pages/UpdateProfile';
 import ForgetPassword from './pages/ForgetPassword';
 import ChangePassword from './pages/ChangePassword';
+import ProfileViewer from './pages/ProfileViewer';
+import UserPosts from './pages/UserPosts';
 
 const router = createBrowserRouter([
   {
@@ -64,6 +66,12 @@ const router = createBrowserRouter([
   }, {
     path: '/forget-password',
     element: <><Navbar /><ForgetPassword /><Footer /></>
+  }, {
+    path: '/profileviewer/:email',
+    element: <><Navbar /><ProfileViewer /><Footer /></>
+  }, {
+    path: '/user-posts/:email',
+    element: <><Navbar /><UserPosts /><Footer /></>
   }
 ]);
 

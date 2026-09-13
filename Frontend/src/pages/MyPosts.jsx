@@ -22,7 +22,7 @@ const MyPosts = () => {
 
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("https://snapshare1.onrender.com/api/images/myposts", {
+        const res = await axios.get("http://localhost:5000/api/images/myposts", {
           headers: {
             Authorization: `Bearer ${token}`
           }

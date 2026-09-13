@@ -44,7 +44,7 @@ const Register = () => {
     console.log(formData);
     try {
       setLoading(true);
-      const res = await axios.post("https://snapshare1.onrender.com/api/users/register", formData)
+      const res = await axios.post("http://localhost:5000/api/users/register", formData)
       if (res.data.success) {
         navigate("/verify", {
           state: {

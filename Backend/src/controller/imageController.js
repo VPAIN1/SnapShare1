@@ -1,5 +1,6 @@
 import { Images } from "../models/imageModel.js";
 import { uploadFile, deleteFile } from "../services/imageKit.js";
+import User from "../models/userModel.js";
 
 
 export const addImage = async (req, res) => {
@@ -51,7 +52,7 @@ export const addImage = async (req, res) => {
 };
 
 
-export const getAllImages = async (_, res) => {
+export const getAllImages = async (req , res) => {
     try {
         const images = await Images.find();
 

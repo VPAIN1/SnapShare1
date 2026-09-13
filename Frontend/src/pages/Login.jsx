@@ -44,7 +44,7 @@ const Login = () => {
       setLoading(true);
 
       const res = await axios.post(
-        "https://snapshare1.onrender.com/api/users/login",
+        "http://localhost:5000/api/users/login",
         formData
       );
 
