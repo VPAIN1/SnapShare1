@@ -1,3 +1,6 @@
+// my post only
+
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +49,7 @@ export const PostCard = ({ post, media, mediaIndex, currentUserId, formattedDate
                     className="bg-black w-full flex items-center justify-center h-[320px] overflow-hidden cursor-pointer group relative"
                 >
                     {isVideo ? (
-                        <video src={media.url} autoPlay muted playsInline controls className="w-full h-full object-contain pointer-events-auto" />
+                        <video src={media.url} muted playsInline controls className="w-full h-full object-contain pointer-events-auto" />
                     ) : (
                         <img src={media.url} alt={post.ImageName} className="w-full h-full object-contain transition duration-300 group-hover:scale-105" />
                     )}

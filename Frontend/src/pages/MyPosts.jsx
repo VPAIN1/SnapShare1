@@ -136,13 +136,13 @@ const MyPosts = () => {
 
   return (
     <div className="relative min-h-[92vh] w-full overflow-x-hidden bg-gradient-to-br from-purple-950 via-gray-900 to-indigo-950 pt-24 pb-16 px-4">
-      
+
       {/* Background Glowing Ambient Orbs */}
       <div className="absolute top-1/4 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto w-full relative z-10 space-y-8">
-        
+
         {/* Header Banner */}
         <div className="border-b border-white/10 pb-6">
           <div>
@@ -182,11 +182,21 @@ const MyPosts = () => {
                   currentUserId={currentUserId}
                   formattedDate={formattedDate}
                   onLike={handleLike}
-                  onOpenModal={() => setSelectedMedia({
-                    ...media, postId: post._id, userId: post.userId || currentUserId,
-                    title: post.ImageName, desc: post.ImageDesc, userEmail: post.userEmail,
-                    date: formattedDate, userProfilePic: post.userProfilePic, comments: post.comments || []
-                  })}
+                  onOpenModal={() => {
+                    const isVideo = media.url.match(/\.(mp4|mov|webm|avi)$/i) || media.url.includes("video");
+                    setSelectedMedia({
+                      ...media,
+                      postId: post._id,
+                      userId: post.userId?._id || post.userId || currentUserId,
+                      isVideo,
+                      title: post.ImageName,
+                      desc: post.ImageDesc,
+                      userEmail: post.userId?.email || post.userEmail || "User",
+                      date: formattedDate,
+                      userProfilePic: post.userId?.profilepic || post.userProfilePic,
+                      comments: post.comments || []
+                    });
+                  }}
                   onShare={(id) => handleShare(id, media.url)}
                   onDeleteClick={(id) => setPostToDelete(id)}
                 />

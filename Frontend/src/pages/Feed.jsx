@@ -152,7 +152,7 @@ const Feed = () => {
 
                                             {/* Media Box */}
                                             <div onClick={openModalHandler} className="bg-black w-full flex items-center justify-center h-[320px] overflow-hidden cursor-pointer group relative">
-                                                {isVideo ? <video src={media.url} autoPlay muted playsInline controls className="w-full h-full object-contain pointer-events-auto" /> : <img src={media.url} alt={post.ImageName} className="w-full h-full object-contain transition duration-300 group-hover:scale-105" />}
+                                                {isVideo ? <video src={media.url} muted playsInline controls className="w-full h-full object-contain pointer-events-auto" /> : <img src={media.url} alt={post.ImageName} className="w-full h-full object-contain transition duration-300 group-hover:scale-105" />}
                                             </div>
                                         </div>
 

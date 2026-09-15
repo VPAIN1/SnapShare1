@@ -21,7 +21,7 @@ export const MediaModal = ({ selectedMedia, currentUserId, onClose, onAddComment
                     </div>
 
                     {selectedMedia.isVideo ? (
-                        <video src={selectedMedia.url} controls autoPlay playsInline className="w-full max-h-[70vh] object-contain" />
+                        <video src={selectedMedia.url} controls playsInline className="w-full max-h-[70vh] object-contain" />
                     ) : (
                         <img src={selectedMedia.url} alt={selectedMedia.title} className="w-full max-h-[70vh] object-contain" />
                     )}
